@@ -1,0 +1,4 @@
+#IMPORTANT: It is HIGHLY RECOMMENDED not to touch this file, the entire survey creation process can be done from the game without any problem
+#Only modify it if it is very necessary, and take the risk of a bug appearing
+#There is a boolean option in each survey called 'enabled', it is what will determine if the survey will be available in the game
+#If it is automatically made inactive it means that there is some error in the survey, check very carefully

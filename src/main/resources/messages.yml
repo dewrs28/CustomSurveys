@@ -1,0 +1,166 @@
+################################################
+### CustomSurveys Messages File Version: 1.0 ###
+################################################
+reload: "&aPlugin Reloaded!"
+no_permission: "&cYou don´t have permissions to do this!"
+survey_no_usable: "&cThis survey is disabled, check the 'surveys.yml' file to see if this is an error"
+#Messages when you vote in a survey
+vote_survey:
+  #The variable %s% will be replaced by the option message
+  successful_vote: "&aYou have successfully voted for: &b%s%"
+  no_vote_again: "&cYou can´t vote again!"
+  survey_not_found: "&cSurvey not found"
+  error_no_name_survey: "&cPut a survey to vote"
+  survey_no_run: "&cThis survey has not started"
+#Messages when you list available surveys
+list_surveys:
+  view: "&b[View]"
+  #The variable %s% will be replaced by the name of the survey
+  #The %m% variable will be replaced by the survey message
+  view_message: "&eSurvey: &7%s%\n&eMessage: &7%m%\n&eOptions:"
+  edit: "&e[Edit]"
+  start: "&a[Start]"
+  remove: "&c[Remove]"
+  list_message: "&eActual Surveys:"
+#Messages when creating a survey
+create_survey:
+  rejoin_message: "&cYou disconnected while creating a survey, do you want to continue creating it?\nPut:\n&eY: &7to confirm\n&eN: &7to cancel"
+  #The variable %s% will be replaced by the name of the survey
+  rejoin_confirm: "&aYou confirmed to continue creating the survey: &7%s%"
+  #The variable %s% will be replaced by the name of the survey
+  rejoin_cancel: "&aYou canceled the creation of the survey: &7%s%"
+  error_no_name_survey: "&cSet a name"
+  error_survey_exist: "&cThis survey already exists"
+  #The variable %s% will be replaced by the name of the survey
+  correct_name: "&aSurvey created! &7%s%"
+  error_select_number: "&cDigit a number"
+  error_minimum_one_option: "&cMinimum select 2 option"
+  error_no_commands: "&cYour can't send commands"
+  set_message: "&eWhat will the survey be?"
+  #The %s% variable will be replaced by the survey message
+  correct_set_message: "&aMessage set successfully! &7%s%"
+  set_number_options: "&eHow many options will the survey have?"
+  #The variable %i% will be replaced by the number of options in the survey
+  correct_set_number_options: "&aNumber of options set successfully! &7%i%"
+  #The variable %s% will be replaced by the current option number
+  set_options: "&eOption: &7%s%"
+  #The variable %i% will be replaced by the option number.
+  #The variable %s% will be replaced by the option message
+  correct_set_options: "&aOption &e#%i% &aset successfully! &7%s%"
+  #The variable %s% will be replaced by the name of the survey
+  finished: "&aSurvey &7%s% &acreated!"
+#Messages when deleting a survey
+remove_survey:
+  #The variable %s% will be replaced by the name of the survey
+  removed: "&aSurvey &7%s% &aremoved!"
+  survey_not_found: "&cSurvey not found"
+  error_no_name_survey: "&cPut the name of the survey"
+#Messages when you edit a survey
+edit_survey:
+  error_no_commands: "&cYour can't send commands"
+  error_option_number: "&cDigit a number"
+  error_no_name_survey: "&cSet the name of a survey to edit"
+  survey_not_found: "&cSurvey not found"
+  #The variable %s% will be replaced by the name of the survey
+  edit_enter: "&eYou entered the survey editing mode &7%s%&e, select what you want to edit."
+  edit_enter_message: "&8- &7Edit message"
+  edit_enter_options: "&8- &7Edit or remove options"
+  edit_enter_add: "&8- &7Add option"
+  #The variable %s% will be replaced by the name of the survey
+  edit_finished: "&aSurvey &7%s% &asuccessfully edited!"
+  #Messages when you edit the survey message
+  message:
+    #The %s% variable will be replaced by the current survey message
+    edit_replace_message: "&eCurrent message: &7%s%\n&eWhat message do you want to put?"
+    #The variable %s% will be replaced by the new survey message
+    correct_set_message: "&aMessage set successfully! &7%s%"
+  #Messages when you add an option to the survey
+  add_option:
+    set_option: "&eWhat option do you want to add?"
+    #The variable %s% will be replaced by the option message
+    correct_set_option: "&aOption set successfully! &7%s%"
+    add_another_option: "&aAdd another option"
+  #Messages when you remove an option from the survey
+  remove_option:
+    symbol: "&c✘"
+    #The variable %i% will be replaced by the number of the option that is being displayed
+    remove_hover_option: "&cRemove option &a#%i%"
+    #The variable %i% will be replaced by the number of the removed option
+    correct_remove_option: "&aOption removed successfully! &7%i%"
+    error_minimum_options: "&cThere must be at least 2 options"
+  #Messages when you edit a survey option
+  edit_option:
+    symbol: "&e✏"
+    edit_enter_option: "&eActual Options:"
+    #The variable %i% will be replaced by the number of the option being edited
+    edit_replace_option: "&eWhat do you want to put for the option: &a%i%"
+    #The variable %i% will be replaced by the number of the option that is being displayed
+    edit_hover_option: "&eEdit option &a#%i%"
+    #The variable %i% will be replaced by the number of the option that was edited
+    correct_set_option: "&aOption &e#%i% &aset successfully! &7%s%"
+#Messages when you start a survey
+start_survey:
+  vote: "&a[Vote]"
+  #The variable %s% will be replaced by the message of the displayed option
+  vote_hover: "&aVote for: &b%s%"
+  survey_in_progress: "&cThere is already a survey in progress"
+  survey_not_found: "&cSurvey not found"
+  error_time_number: "&cDigit a number"
+  survey_start: "&eTime to vote!"
+  survey_start_message: "&aThe survey has started"
+  #The %s% variable will be replaced by the survey message
+  survey_vote: "&eSurvey: &b%s%\n&eOptions:"
+  error_no_name_survey: "&cPut a survey to start"
+  error_number_option: "&cDigit a number option"
+  #The variable %s% will be replaced by the option message
+  option_listing_format: "&8- &7%s%"
+#Messages when you stop a survey
+end_survey:
+  #The %s% variable will be replaced by the survey message
+  survey_end: "&eSurvey finished\n&eSurvey: &7%s%\n&eResults:"
+  correct_end_survey: "&aThe survey has ended"
+  error_no_name_survey: "&cPut a survey to finish"
+  survey_no_run: "&cThis survey has not started"
+  survey_not_found: "&cSurvey not found"
+  no_votes: "&7No one voted"
+  #The variable %s% will be replaced by the message of the winning option of the survey
+  winner_message: "&aWinner: &b%s%"
+  #The variable %s% will be replaced by the option message
+  #The variable %i% will be replaced by the number of votes for the option
+  option_listing_format: "&8- &7%s% &eVotes: &b%i%"
+#Error messages
+error:
+  incorrect_command: "&cIncorrect Usage &7/survey help"
+help_command:
+  - "&8&m                                                            "
+  - "&e&lCustomSurveys Help"
+  - " "
+  - "&e/survey create (name): &7Create a survey"
+  - "&e/survey remove (name): &7Remove a survey"
+  - "&e/survey edit (name): &7Edit a survey"
+  - "&e/survey list: &7See all available surveys"
+  - "&e/survey start (name): &7Start a survey with the predefined time"
+  - "&e/survey start (name) (duration): &7Start a survey that lasts a defined time (in seconds)"
+  - "&e/survey end (name): &7End a survey"
+  - "&e/survey vote (name): &7Vote in a survey"
+  - "&e/survey reload: &7Reload the plugin"
+  - " "
+  - "&7/surveys help 2: Next page"
+  - " "
+  - "&8&m                                                            "
+help_shortcuts_json:
+  - "&8&m                                                                 "
+  - "&e&lShortcuts for JSON messages"
+  - " "
+  - "&e/survey edit (name) message: &7Edit the survey message"
+  - "&e/survey edit (name) option (option_number): &7Edit some option of the survey"
+  - "&e/survey edit (name) add: &7Add an option to the survey"
+  - "&e/survey edit (name) remove (option_numer): &7Remove an option from the survey"
+  - "&e/survey view (name): &7View the message and options of a survey"
+  - "&e/survey vote (name) (option_number): &7Vote in a survey for a specific option"
+  - " "
+  - "&8&m                                                                 "
+
+
+
+

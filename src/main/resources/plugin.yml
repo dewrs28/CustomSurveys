@@ -1,0 +1,10 @@
+name: CustomSurveys
+main: me.dewrs.CustomSurveys
+version: 1.0
+author: dewrs
+description: Create your custom surveys
+api-version: 1.13
+
+commands:
+  survey:
+    description: Main Command

@@ -1,0 +1,51 @@
+#####################################################
+### CustomSurveys File Configuration Version: 1.0 ###
+#####################################################
+#All plugin titles
+titles:
+  #Title that will appear for everyone when starting a survey
+  start_survey:
+    #Select if you want the title to appear. Set true/false
+    show_title: true
+    #Select the text you want to appear on the first line of the title
+    #The %x% variable is replaced by the survey message
+    up: "&e%s%"
+    #Select the text that will appear on the second line of the title
+    down: "&bVote now in the chat!"
+    #Select the time it will take for the title to appear in its entirety. Put an integer in ticks (1 second = 20 ticks)
+    fadeIn: 20
+    #Select how long the title will be on the screen. Put an integer in ticks (1 second = 20 ticks)
+    stay: 60
+    #Select the time it will take for the title to disappear in its entirety. Put an integer in ticks (1 second = 20 ticks)
+    fadeOut: 20
+  #Title that appears for everyone at the end of a survey
+  end_survey:
+    show_title: true
+    up: "&e%s%"
+    #The variable %w% will be replaced by the message of the winning option of the survey
+    down: "&aWinner: &b%w%"
+    fadeIn: 20
+    stay: 60
+    fadeOut: 20
+#Some options you can change
+options:
+  #Select the duration of a survey which was started without a time (in seconds)
+  default_time_survey: 30
+  #Select if you want sounds to be activated
+  enabled_sounds: true
+#Here you can customize all the sounds. Remember that for this the 'enabled_sounds' option must be activated
+#Important: The predefined sounds are from version 1.20 (https://helpch.at/docs/1.20/org/bukkit/Sound.html)
+#If your server is version 1.8, use sounds from this version (https://helpch.at/docs/1.8/index.html?org/bukkit/Sound.html)
+sounds:
+  #It will be reproduced when there is a common error, lack of arguments in a command, missing parameters, character confusion, etc.
+  error: BLOCK_ANVIL_PLACE
+  #It will play when the user does not have permissions to perform an action.
+  no_permission: BLOCK_ANVIL_USE
+  #Perhaps this is the sound you hear the most, it is used for very general actions, for example, sending a command
+  command_send: BLOCK_NOTE_BLOCK_PLING
+  #It will be played when starting a survey
+  start_survey: ENTITY_PLAYER_LEVELUP
+  #It will play when a survey is finished
+  end_survey: BLOCK_NOTE_BLOCK_PLING
+  #It will be played when an action is performed correctly
+  correct: ENTITY_PLAYER_LEVELUP

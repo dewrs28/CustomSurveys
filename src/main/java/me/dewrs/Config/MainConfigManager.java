@@ -29,6 +29,12 @@ public class MainConfigManager {
     private Sound soundEndSurvey;
     private Sound soundCorrect;
     private boolean soundsEnabled;
+    private boolean dbEnabled;
+    private String dbHost;
+    private int dbPort;
+    private String dbDatabase;
+    private String dbUser;
+    private String dbPassword;
 
     public MainConfigManager(CustomSurveys plugin){
         this.plugin = plugin;
@@ -52,6 +58,12 @@ public class MainConfigManager {
         titlesEndFadeOut = config.getInt("titles.end_survey.fadeOut");
         defaultTimeSurvey = config.getInt("options.default_time_survey");
         soundsEnabled = config.getBoolean("options.enabled_sounds");
+
+        dbEnabled = config.getBoolean("database.enabled");
+        if(isDbEnabled()){
+            regDatabase();
+        }
+
         regSounds();
     }
 
@@ -68,9 +80,45 @@ public class MainConfigManager {
             Bukkit.getConsoleSender().sendMessage(SetColor.setColor(plugin.name+"&cError! Invalid sounds in the 'config.yml'"));
         }
     }
+
+    public void regDatabase(){
+        FileConfiguration config = configFile.getConfig();
+        dbHost = config.getString("database.host");
+        dbPort = config.getInt("database.port");
+        dbDatabase = config.getString("database.database");
+        dbUser = config.getString("database.user");
+        dbPassword = config.getString("database.password");
+    }
     public void reloadConfig(){
         configFile.reloadConfig();
         loadConfig();
+    }
+    public void saveConfig(){
+        configFile.saveConfig();
+        loadConfig();
+    }
+
+    public void setVersionPaths(){
+        FileConfiguration config = configFile.getConfig();
+        if(!config.contains("database.enabled")){
+            config.set("database.enabled", false);
+        }
+        if(!config.contains("database.host")){
+            config.set("database.host", "hostname");
+        }
+        if(!config.contains("database.port")){
+            config.set("database.port", "port");
+        }
+        if(!config.contains("database.database")){
+            config.set("database.database", "database");
+        }
+        if(!config.contains("database.user")){
+            config.set("database.user", "user");
+        }
+        if(!config.contains("database.password")){
+            config.set("database.password", "pass");
+        }
+        saveConfig();
     }
 
     public boolean isTitlesStartEnabled() {
@@ -132,5 +180,23 @@ public class MainConfigManager {
     }
     public boolean isSoundsEnabled() {
         return soundsEnabled;
+    }
+    public boolean isDbEnabled() {
+        return dbEnabled;
+    }
+    public String getDbHost() {
+        return dbHost;
+    }
+    public int getDbPort() {
+        return dbPort;
+    }
+    public String getDbDatabase() {
+        return dbDatabase;
+    }
+    public String getDbUser() {
+        return dbUser;
+    }
+    public String getDbPassword() {
+        return dbPassword;
     }
 }

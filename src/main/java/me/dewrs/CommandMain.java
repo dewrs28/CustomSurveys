@@ -52,24 +52,38 @@ public class CommandMain implements CommandExecutor {
                         if (args.length > 1) {
                             String nameSurvey = args[1];
                             CreateSurvey survey = new CreateSurvey(plugin);
-                            if (!survey.surveyExist(nameSurvey)) {
-                                survey.createSurvey(player, nameSurvey);
-                                plugin.setAdminSurvey(player);
-                                sound.setSounds(player, CustomSound.COMMAND_SEND);
-                            } else {
-                                if (!plugin.getSurveysManager().getConfig().contains("Surveys." + nameSurvey.toLowerCase() + ".usable") ||
-                                        !plugin.getSurveysManager().getConfig().getBoolean("Surveys." + nameSurvey.toLowerCase() + ".usable")) {
-                                    player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getSurveyDisabled()));
-                                    sound.setSounds(player, CustomSound.ERROR);
+                            try {
+                                if (!survey.surveyExist(nameSurvey)) {
+                                    survey.createSurvey(player, nameSurvey);
+                                    plugin.setAdminSurvey(player);
+                                    sound.setSounds(player, CustomSound.COMMAND_SEND);
                                 } else {
-                                    player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getCreateSurveyExist()));
-                                    sound.setSounds(player, CustomSound.ERROR);
+                                    if (!plugin.getMainConfigManager().isDbEnabled()) {
+                                        if (!plugin.getSurveysManager().getConfig().contains("Surveys." + nameSurvey.toLowerCase() + ".usable") ||
+                                                !plugin.getSurveysManager().getConfig().getBoolean("Surveys." + nameSurvey.toLowerCase() + ".usable")) {
+                                            player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getSurveyDisabled()));
+                                            sound.setSounds(player, CustomSound.ERROR);
+                                        } else {
+                                            player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getCreateSurveyExist()));
+                                            sound.setSounds(player, CustomSound.ERROR);
+                                        }
+                                    } else {
+                                        player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getCreateSurveyExist()));
+                                        sound.setSounds(player, CustomSound.ERROR);
+                                    }
+                                }
+                            }catch (NullPointerException ex){
+                                if(plugin.getMainConfigManager().isDbEnabled()) {
+                                    player.sendMessage(SetColor.setColor(plugin.name + "&cError! Could not connect to MySQL"));
+                                }else{
+                                    ex.printStackTrace();
                                 }
                             }
                         } else {
                             sound.setSounds(player, CustomSound.ERROR);
                             player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getCreateSurveyNoName()));
                         }
+
                     }else{
                         sound.setSounds(player, CustomSound.NO_PERMISSION);
                         player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getNoPermission()));

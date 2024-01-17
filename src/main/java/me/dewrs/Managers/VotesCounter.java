@@ -1,6 +1,7 @@
 package me.dewrs.Managers;
 
 import me.dewrs.CustomSurveys;
+import me.dewrs.SQL.SQLManager;
 import me.dewrs.Utils.CustomSound;
 import me.dewrs.Utils.SetColor;
 import me.dewrs.Utils.SetSounds;
@@ -8,6 +9,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -24,40 +26,82 @@ public class VotesCounter {
 
     public void iterateOptions(Player player, String survey){
         SetSounds sound = new SetSounds(plugin);
-        if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase())) {
-            if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase() + ".usable") &&
-                    plugin.getSurveysManager().getConfig().getBoolean("Surveys." + survey.toLowerCase() + ".usable")) {
-                if(plugin.getSurveyProgress().equals(survey.toLowerCase())) {
-                    String message = plugin.getSurveysManager().getConfig().getString("Surveys." + survey.toLowerCase() + ".message");
-                    sound.setSounds(player, CustomSound.START_SURVEY);
-                    player.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyStartVote().replace("%s%", message)));
-                    for (String key : plugin.getSurveysManager().getConfig().getConfigurationSection("Surveys." + survey.toLowerCase()).getKeys(false)) {
-                        if (key.startsWith("option_")) {
-                            String[] split = key.split("_");
-                            String numberOption = split[1];
-                            TextComponent option, vote;
-                            String currentOption = plugin.getSurveysManager().getConfig().getString("Surveys." + survey.toLowerCase() + "." + key);
-                            option = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getFormatOptionsStart().replace("%s%", currentOption)+" "));
+        if(!plugin.getMainConfigManager().isDbEnabled()) {
+            if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase())) {
+                if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase() + ".usable") &&
+                        plugin.getSurveysManager().getConfig().getBoolean("Surveys." + survey.toLowerCase() + ".usable")) {
+                    if (plugin.getSurveyProgress().equals(survey.toLowerCase())) {
+                        String message = plugin.getSurveysManager().getConfig().getString("Surveys." + survey.toLowerCase() + ".message");
+                        sound.setSounds(player, CustomSound.START_SURVEY);
+                        player.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyStartVote().replace("%s%", message)));
+                        for (String key : plugin.getSurveysManager().getConfig().getConfigurationSection("Surveys." + survey.toLowerCase()).getKeys(false)) {
+                            if (key.startsWith("option_")) {
+                                String[] split = key.split("_");
+                                String numberOption = split[1];
+                                TextComponent option, vote;
+                                String currentOption = plugin.getSurveysManager().getConfig().getString("Surveys." + survey.toLowerCase() + "." + key);
+                                option = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getFormatOptionsStart().replace("%s%", currentOption) + " "));
 
-                            vote = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVote()));
-                            vote.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/survey vote " + survey.toLowerCase() + " " + numberOption));
-                            vote.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVoteHover().replace("%s%", currentOption))).create()));
+                                vote = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVote()));
+                                vote.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/survey vote " + survey.toLowerCase() + " " + numberOption));
+                                vote.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVoteHover().replace("%s%", currentOption))).create()));
 
-                            option.addExtra(vote);
-                            player.spigot().sendMessage(option);
+                                option.addExtra(vote);
+                                player.spigot().sendMessage(option);
+                            }
                         }
+                    } else {
+                        sound.setSounds(player, CustomSound.ERROR);
+                        player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getVoteSurveyNoRun()));
                     }
-                }else{
+                } else {
                     sound.setSounds(player, CustomSound.ERROR);
-                    player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getVoteSurveyNoRun()));
+                    player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyNotFound()));
                 }
-            }else{
+            } else {
                 sound.setSounds(player, CustomSound.ERROR);
-                player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getStartSurveyNotFound()));
+                player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyNotFound()));
             }
         }else{
-            sound.setSounds(player, CustomSound.ERROR);
-            player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getStartSurveyNotFound()));
+            try {
+                if (SQLManager.surveyExist(plugin.getMySQL(), survey.toLowerCase())) {
+                    if (plugin.getSurveyProgress().equals(survey.toLowerCase())) {
+                        ArrayList<String> columns = SQLManager.getSQLAllColumns(plugin.getMySQL(), survey.toLowerCase());
+                        String message = SQLManager.getSQLMessage(plugin.getMySQL(), survey.toLowerCase());
+                        sound.setSounds(player, CustomSound.START_SURVEY);
+                        player.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyStartVote().replace("%s%", message)));
+                        int i = 1;
+                        for(String op : columns) {
+                            if(op.startsWith("option_")) {
+                                int numberOption = i+1;
+                                String currentOption = SQLManager.getSQLOption(plugin.getMySQL(), survey.toLowerCase(), op);
+                                TextComponent option, vote;
+                                option = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getFormatOptionsStart().replace("%s%", currentOption) + " "));
+
+                                vote = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVote()));
+                                vote.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/survey vote " + survey.toLowerCase() + " " + numberOption));
+                                vote.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVoteHover().replace("%s%", currentOption))).create()));
+
+                                option.addExtra(vote);
+                                player.spigot().sendMessage(option);
+                                i++;
+                            }
+                        }
+                    }else{
+                        sound.setSounds(player, CustomSound.ERROR);
+                        player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getVoteSurveyNoRun()));
+                    }
+                } else {
+                    sound.setSounds(player, CustomSound.ERROR);
+                    player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyNotFound()));
+                }
+            }catch (NullPointerException ex){
+                if(plugin.getMainConfigManager().isDbEnabled()) {
+                    player.sendMessage(SetColor.setColor(plugin.name + "&cError! Could not connect to MySQL"));
+                }else{
+                    ex.printStackTrace();
+                }
+            }
         }
     }
     public void detectCommand(Player player, String[] args){
@@ -84,30 +128,60 @@ public class VotesCounter {
 
     public void countVote(Player player, String survey, Integer option){
         SetSounds sound = new SetSounds(plugin);
-        if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase())) {
-            if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase() + ".usable") &&
-                    plugin.getSurveysManager().getConfig().getBoolean("Surveys." + survey.toLowerCase() + ".usable")) {
-                if(plugin.getSurveyProgress().equals(survey.toLowerCase())) {
-                    if(!plugin.votes.containsKey(player.getName())){
-                        plugin.votes.put(player.getName(), option);
-                        String optionVoted = plugin.getSurveysManager().getConfig().getString("Surveys."+survey.toLowerCase()+".option_"+option);
-                        sound.setSounds(player, CustomSound.CORRECT);
-                        player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getStartSurveyCorrectVote().replace("%s%", optionVoted)));
-                    }else{
+        if(!plugin.getMainConfigManager().isDbEnabled()) {
+            if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase())) {
+                if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase() + ".usable") &&
+                        plugin.getSurveysManager().getConfig().getBoolean("Surveys." + survey.toLowerCase() + ".usable")) {
+                    if (plugin.getSurveyProgress().equals(survey.toLowerCase())) {
+                        if (!plugin.votes.containsKey(player.getName())) {
+                            plugin.votes.put(player.getName(), option);
+                            String optionVoted = plugin.getSurveysManager().getConfig().getString("Surveys." + survey.toLowerCase() + ".option_" + option);
+                            sound.setSounds(player, CustomSound.CORRECT);
+                            player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyCorrectVote().replace("%s%", optionVoted)));
+                        } else {
+                            sound.setSounds(player, CustomSound.ERROR);
+                            player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getStartSurveyNoVoteAgain()));
+                        }
+                    } else {
                         sound.setSounds(player, CustomSound.ERROR);
-                        player.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyNoVoteAgain()));
+                        player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getVoteSurveyNoRun()));
                     }
-                }else{
+                } else {
                     sound.setSounds(player, CustomSound.ERROR);
-                    player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getVoteSurveyNoRun()));
+                    player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getVoteSurveyNoRun()));
                 }
-            }else{
+            } else {
                 sound.setSounds(player, CustomSound.ERROR);
-                player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getVoteSurveyNoRun()));
+                player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getVoteSurveyNotFound()));
             }
         }else{
-            sound.setSounds(player, CustomSound.ERROR);
-            player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getVoteSurveyNotFound()));
+            try {
+                if (SQLManager.surveyExist(plugin.getMySQL(), survey.toLowerCase())) {
+                    if (plugin.getSurveyProgress().equals(survey.toLowerCase())) {
+                        if (!plugin.votes.containsKey(player.getName())) {
+                            plugin.votes.put(player.getName(), option);
+                            String optionVoted = SQLManager.getSQLOption(plugin.getMySQL(), survey.toLowerCase(), "option_"+option);
+                            sound.setSounds(player, CustomSound.CORRECT);
+                            player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyCorrectVote().replace("%s%", optionVoted)));
+                        } else {
+                            sound.setSounds(player, CustomSound.ERROR);
+                            player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getStartSurveyNoVoteAgain()));
+                        }
+                    } else {
+                        sound.setSounds(player, CustomSound.ERROR);
+                        player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getVoteSurveyNoRun()));
+                    }
+                } else {
+                    sound.setSounds(player, CustomSound.ERROR);
+                    player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getVoteSurveyNotFound()));
+                }
+            }catch (NullPointerException ex){
+                if(plugin.getMainConfigManager().isDbEnabled()) {
+                    player.sendMessage(SetColor.setColor(plugin.name + "&cError! Could not connect to MySQL"));
+                }else{
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 
@@ -134,12 +208,35 @@ public class VotesCounter {
                             LinkedHashMap::new
                     ));
             ArrayList<Integer> optionsNoVote = new ArrayList<>();
-            for (String key : plugin.getSurveysManager().getConfig().getConfigurationSection("Surveys." + survey.toLowerCase()).getKeys(false)) {
-                if (key.startsWith("option_")) {
-                    String[] split = key.split("_");
-                    int option = Integer.parseInt(split[1]);
-                    if(!sortedMap.containsKey(option)){
-                        optionsNoVote.add(option);
+            if(!plugin.getMainConfigManager().isDbEnabled()) {
+                for (String key : plugin.getSurveysManager().getConfig().getConfigurationSection("Surveys." + survey.toLowerCase()).getKeys(false)) {
+                    if (key.startsWith("option_")) {
+                        String[] split = key.split("_");
+                        int option = Integer.parseInt(split[1]);
+                        if (!sortedMap.containsKey(option)) {
+                            optionsNoVote.add(option);
+                        }
+                    }
+                }
+            }else{
+                try {
+                    if (SQLManager.surveyExist(plugin.getMySQL(), survey.toLowerCase())) {
+                        ArrayList<String> columns = SQLManager.getSQLAllColumns(plugin.getMySQL(), survey.toLowerCase());
+                        for (String key : columns) {
+                            if (key.startsWith("option_")) {
+                                String[] split = key.split("_");
+                                int option = Integer.parseInt(split[1]);
+                                if (!sortedMap.containsKey(option)) {
+                                    optionsNoVote.add(option);
+                                }
+                            }
+                        }
+                    }
+                }catch (NullPointerException ex){
+                    if(plugin.getMainConfigManager().isDbEnabled()) {
+                        Bukkit.getConsoleSender().sendMessage(SetColor.setColor(plugin.name + "&cError! Could not connect to MySQL"));
+                    }else{
+                        ex.printStackTrace();
                     }
                 }
             }

@@ -5,6 +5,7 @@ import me.dewrs.Config.MessagesManager;
 import me.dewrs.Config.SurveysManager;
 import me.dewrs.Managers.CreateSurvey;
 import me.dewrs.Managers.EditSurvey;
+import me.dewrs.SQL.SQLConnection;
 import me.dewrs.Utils.SetColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -12,12 +13,15 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.Connection;
+import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class CustomSurveys extends JavaPlugin {
+    private SQLConnection connection;
     private int taskID;
     private String surveyProgress = "";
     public HashMap<String,Integer> votes;
@@ -87,6 +91,11 @@ public class CustomSurveys extends JavaPlugin {
     private MainConfigManager mainConfigManager;
     private MessagesManager messagesManager;
     private SurveysManager surveysManager;
+    private String host;
+    private int port;
+    private String database;
+    private String user;
+    private String password;
     public void onEnable(){
         regCommands();
         regEvents();
@@ -103,6 +112,16 @@ public class CustomSurveys extends JavaPlugin {
         mainConfigManager = new MainConfigManager(this);
         messagesManager = new MessagesManager(this);
         surveysManager = new SurveysManager(this);
+        host = getMainConfigManager().getDbHost();
+        port = getMainConfigManager().getDbPort();
+        database = getMainConfigManager().getDbDatabase();
+        user = getMainConfigManager().getDbUser();
+        password = getMainConfigManager().getDbPassword();
+        getMainConfigManager().setVersionPaths();
+        getMessagesManager().setVersionPaths();
+        if(getMainConfigManager().isDbEnabled()) {
+            this.connection = new SQLConnection(host, port, database, user, password);
+        }
         if(getSurveysManager().getConfig().getConfigurationSection("Surveys") != null) {
             verifySurveySyntax();
         }else if(getSurveysManager().getConfig().getKeys(true).size() != 0){
@@ -212,5 +231,24 @@ public class CustomSurveys extends JavaPlugin {
 
     public void setTaskID(int taskID) {
         this.taskID = taskID;
+    }
+
+    public Connection getMySQL(){
+        return this.connection.getConnection();
+    }
+
+    public String getDatabase() {
+        return database;
+    }
+
+    public ArrayList<String> getStringOptions(String survey){
+        ArrayList<String> options = new ArrayList<>();
+        for(String key : getSurveysManager().getConfig().getConfigurationSection("Surveys."+survey.toLowerCase()).getKeys(false)){
+            if(key.startsWith("option_")) {
+                String option = getSurveysManager().getConfig().getString("Surveys."+survey.toLowerCase()+"."+key);
+                options.add(option);
+            }
+        }
+        return options;
     }
 }

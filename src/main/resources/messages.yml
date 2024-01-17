@@ -22,6 +22,8 @@ list_surveys:
   start: "&a[Start]"
   remove: "&c[Remove]"
   list_message: "&eActual Surveys:"
+  survey_not_found: "&cSurvey not found"
+  error_no_name_survey: "&cSet a name"
 #Messages when creating a survey
 create_survey:
   rejoin_message: "&cYou disconnected while creating a survey, do you want to continue creating it?\nPut:\n&eY: &7to confirm\n&eN: &7to cancel"

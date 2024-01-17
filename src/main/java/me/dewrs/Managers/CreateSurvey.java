@@ -1,6 +1,7 @@
 package me.dewrs.Managers;
 
 import me.dewrs.CustomSurveys;
+import me.dewrs.SQL.SQLManager;
 import me.dewrs.Utils.CustomSound;
 import me.dewrs.Utils.SetColor;
 import me.dewrs.Utils.SetSounds;
@@ -12,6 +13,9 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
 public class CreateSurvey implements Listener {
 
     private CustomSurveys plugin;
@@ -21,10 +25,14 @@ public class CreateSurvey implements Listener {
     }
 
     public boolean surveyExist(String survey){
-        if(plugin.getSurveysManager().getConfig().contains("Surveys."+survey.toLowerCase())){
-            return true;
+        if(!plugin.getMainConfigManager().isDbEnabled()) {
+            if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase())) {
+                return true;
+            } else {
+                return false;
+            }
         }else{
-            return false;
+            return SQLManager.surveyExist(plugin.getMySQL(), survey.toLowerCase());
         }
     }
 
@@ -84,6 +92,16 @@ public class CreateSurvey implements Listener {
                         plugin.getSurveysManager().getConfig().set("Surveys."+survey + ".option_" + i, input);
                         plugin.getSurveysManager().getConfig().set("Surveys."+survey+".usable", true);
                         plugin.getSurveysManager().saveConfig();
+
+                        String message = plugin.getSurveysManager().getConfig().getString("Surveys."+survey.toLowerCase()+".message");
+                        ArrayList<String> options = plugin.getStringOptions(survey);
+                        if(plugin.getMainConfigManager().isDbEnabled()){
+                            SQLManager.createSQLSurvey(plugin.getMySQL(), survey.toLowerCase(), getNumberOptions(survey));
+                            SQLManager.setSQLSurvey(plugin.getMySQL(), survey.toLowerCase(), message, options);
+                            plugin.getSurveysManager().getConfig().set("Surveys."+survey.toLowerCase(), null);
+                            plugin.getSurveysManager().saveConfig();
+                        }
+
                         player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getCreateSurveyOptionsSet().replace("%s%", input).replace("%i%", String.valueOf(i))));
                         player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getCreateSurveyFinished().replace("%s%", plugin.surveyCreator.get(player.getName()))));
                         plugin.removeAdminSurvey(player);
@@ -167,5 +185,10 @@ public class CreateSurvey implements Listener {
             plugin.setPreventQuit(player);
             plugin.removeAdminSurvey(player);
         }
+    }
+    public int getNumberOptions(String survey) {
+        LinkedHashMap<String, Object> temp = new LinkedHashMap<>(plugin.getSurveysManager().getConfig().getConfigurationSection("Surveys." + survey.toLowerCase()).getValues(true));
+        temp.entrySet().removeIf(e -> !e.getKey().startsWith("option_"));
+        return temp.size();
     }
 }

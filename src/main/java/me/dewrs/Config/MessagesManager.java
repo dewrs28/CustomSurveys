@@ -86,6 +86,8 @@ public class MessagesManager {
     private String formatOptionsEnd;
     private List<String> helpCommand;
     private List<String> helpJSONMessages;
+    private String viewSurveyNotFound;
+    private String viewSurveyNoName;
     public MessagesManager(CustomSurveys plugin){
         this.plugin = plugin;
         configFile = new CustomConfig("messages.yml",null,plugin);
@@ -172,10 +174,22 @@ public class MessagesManager {
         listSurveysRemove = config.getString("list_surveys.remove");
         formatOptionsStart = config.getString("start_survey.option_listing_format");
         formatOptionsEnd = config.getString("end_survey.option_listing_format");
+        viewSurveyNoName = config.getString("list_surveys.error_no_name_survey");
+        viewSurveyNotFound = config.getString("list_surveys.survey_not_found");
     }
     public void reloadConfig(){
         configFile.reloadConfig();
         loadConfig();
+    }
+    public void setVersionPaths(){
+        FileConfiguration config = configFile.getConfig();
+        if(!config.contains("list_surveys.survey_not_found")){
+            config.set("list_surveys.survey_not_found", "&cSurvey not found");
+        }
+        if(!config.contains("list_surveys.error_no_name_survey")){
+            config.set("list_surveys.error_no_name_survey", "&cSet a name");
+        }
+        saveConfig();
     }
     public FileConfiguration getConfig(){
         return configFile.getConfig();
@@ -417,5 +431,11 @@ public class MessagesManager {
     }
     public List<String> getHelpJSONMessages() {
         return helpJSONMessages;
+    }
+    public String getViewSurveyNotFound() {
+        return viewSurveyNotFound;
+    }
+    public String getViewSurveyNoName() {
+        return viewSurveyNoName;
     }
 }

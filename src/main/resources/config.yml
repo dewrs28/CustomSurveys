@@ -49,3 +49,10 @@ sounds:
   end_survey: BLOCK_NOTE_BLOCK_PLING
   #It will be played when an action is performed correctly
   correct: ENTITY_PLAYER_LEVELUP
+database:
+  enabled: false
+  host: hostname
+  port: port
+  database: "database"
+  user: "user"
+  password: "pass"

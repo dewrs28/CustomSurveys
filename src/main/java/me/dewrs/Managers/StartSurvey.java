@@ -1,6 +1,7 @@
 package me.dewrs.Managers;
 
 import me.dewrs.CustomSurveys;
+import me.dewrs.SQL.SQLManager;
 import me.dewrs.Utils.CustomSound;
 import me.dewrs.Utils.SetColor;
 import me.dewrs.Utils.SetSounds;
@@ -11,6 +12,8 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
 
 public class StartSurvey {
     private CustomSurveys plugin;
@@ -45,60 +48,122 @@ public class StartSurvey {
 
     public void startSurvey(Player player, String survey, Integer time) {
         SetSounds sound = new SetSounds(plugin);
-        if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase())) {
-            if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase() + ".usable") &&
-                    plugin.getSurveysManager().getConfig().getBoolean("Surveys." + survey.toLowerCase() + ".usable")) {
-                if(plugin.getSurveyProgress().equals("")) {
-                    String message = plugin.getSurveysManager().getConfig().getString("Surveys." + survey.toLowerCase() + ".message");
-                    for (Player p : Bukkit.getOnlinePlayers()) {
-                        p.sendMessage("");
-                        sound.setSounds(p, CustomSound.START_SURVEY);
-                        p.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyStartMessage()));
-                        p.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyStartVote().replace("%s%", message)));
-                        for (String key : plugin.getSurveysManager().getConfig().getConfigurationSection("Surveys." + survey.toLowerCase()).getKeys(false)) {
-                            if (key.startsWith("option_")) {
-                                String[] split = key.split("_");
-                                String numberOption = split[1];
-                                TextComponent option, vote;
-                                String currentOption = plugin.getSurveysManager().getConfig().getString("Surveys." + survey.toLowerCase() + "." + key);
-                                option = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getFormatOptionsStart().replace("%s%", currentOption)+" "));
+        if (!plugin.getMainConfigManager().isDbEnabled()) {
+            if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase())) {
+                if (plugin.getSurveysManager().getConfig().contains("Surveys." + survey.toLowerCase() + ".usable") &&
+                        plugin.getSurveysManager().getConfig().getBoolean("Surveys." + survey.toLowerCase() + ".usable")) {
+                    if (plugin.getSurveyProgress().equals("")) {
+                        String message = plugin.getSurveysManager().getConfig().getString("Surveys." + survey.toLowerCase() + ".message");
+                        for (Player p : Bukkit.getOnlinePlayers()) {
+                            p.sendMessage("");
+                            sound.setSounds(p, CustomSound.START_SURVEY);
+                            p.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyStartMessage()));
+                            p.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyStartVote().replace("%s%", message)));
+                            for (String key : plugin.getSurveysManager().getConfig().getConfigurationSection("Surveys." + survey.toLowerCase()).getKeys(false)) {
+                                if (key.startsWith("option_")) {
+                                    String[] split = key.split("_");
+                                    String numberOption = split[1];
+                                    TextComponent option, vote;
+                                    String currentOption = plugin.getSurveysManager().getConfig().getString("Surveys." + survey.toLowerCase() + "." + key);
+                                    option = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getFormatOptionsStart().replace("%s%", currentOption) + " "));
 
-                                vote = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVote()));
-                                vote.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/survey vote " + survey.toLowerCase() + " " + numberOption));
-                                vote.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVoteHover().replace("%s%", currentOption))).create()));
+                                    vote = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVote()));
+                                    vote.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/survey vote " + survey.toLowerCase() + " " + numberOption));
+                                    vote.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVoteHover().replace("%s%", currentOption))).create()));
 
-                                option.addExtra(vote);
-                                p.spigot().sendMessage(option);
+                                    option.addExtra(vote);
+                                    p.spigot().sendMessage(option);
+                                }
+                            }
+                            p.sendMessage("");
+                        }
+                        if (plugin.getMainConfigManager().isTitlesStartEnabled()) {
+                            String title = plugin.getMainConfigManager().getTitlesStartUp().replace("%s%", message);
+                            String subtitle = plugin.getMainConfigManager().getTitlesStartDown();
+                            int fadeIn = plugin.getMainConfigManager().getTitlesStartFadeIn();
+                            int stay = plugin.getMainConfigManager().getTitlesStartStay();
+                            int fadeOut = plugin.getMainConfigManager().getTitlesStartFadeOut();
+                            for (Player p : Bukkit.getOnlinePlayers()) {
+                                SetTitles.setTitle(p, title, subtitle, fadeIn, stay, fadeOut);
                             }
                         }
-                        p.sendMessage("");
+                        plugin.setSurveyProgress(survey.toLowerCase());
+                        SurveyScheduler sh = new SurveyScheduler(plugin, survey);
+                        sh.runTaskLater(plugin, time * 20);
+                        plugin.setTaskID(sh.getTaskId());
+                        player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyPlayerMessage()));
+                    } else {
+                        sound.setSounds(player, CustomSound.ERROR);
+                        player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyInProgress()));
                     }
-                    if(plugin.getMainConfigManager().isTitlesStartEnabled()) {
-                        String title = plugin.getMainConfigManager().getTitlesStartUp().replace("%s%", message);
-                        String subtitle = plugin.getMainConfigManager().getTitlesStartDown();
-                        int fadeIn = plugin.getMainConfigManager().getTitlesStartFadeIn();
-                        int stay = plugin.getMainConfigManager().getTitlesStartStay();
-                        int fadeOut = plugin.getMainConfigManager().getTitlesStartFadeOut();
-                        for(Player p : Bukkit.getOnlinePlayers()) {
-                            SetTitles.setTitle(p, title, subtitle, fadeIn, stay, fadeOut);
-                        }
-                    }
-                    plugin.setSurveyProgress(survey.toLowerCase());
-                    SurveyScheduler sh = new SurveyScheduler(plugin,survey);
-                    sh.runTaskLater(plugin, time * 20);
-                    plugin.setTaskID(sh.getTaskId());
-                    player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getStartSurveyPlayerMessage()));
-                }else{
+                } else {
                     sound.setSounds(player, CustomSound.ERROR);
-                    player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getStartSurveyInProgress()));
+                    player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getSurveyDisabled()));
                 }
-            }else{
+            } else {
                 sound.setSounds(player, CustomSound.ERROR);
-                player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getSurveyDisabled()));
+                player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyNotFound()));
             }
         }else{
-            sound.setSounds(player, CustomSound.ERROR);
-            player.sendMessage(SetColor.setColor(plugin.name+plugin.getMessagesManager().getStartSurveyNotFound()));
+            try{
+                if(SQLManager.surveyExist(plugin.getMySQL(), survey.toLowerCase())){
+                    if (plugin.getSurveyProgress().equals("")) {
+                        String message = SQLManager.getSQLMessage(plugin.getMySQL(), survey.toLowerCase());
+                        for (Player p : Bukkit.getOnlinePlayers()) {
+                            p.sendMessage("");
+                            sound.setSounds(p, CustomSound.START_SURVEY);
+                            p.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyStartMessage()));
+                            p.sendMessage(SetColor.setColor(plugin.getMessagesManager().getStartSurveyStartVote().replace("%s%", message)));
+                            ArrayList<String> columns = SQLManager.getSQLAllColumns(plugin.getMySQL(), survey.toLowerCase());
+                            int i = 0;
+                            for(String op : columns) {
+                                if(op.startsWith("option_")) {
+                                    int numberOption = i+1;
+                                    String currentOption = SQLManager.getSQLOption(plugin.getMySQL(), survey.toLowerCase(), op);
+                                    TextComponent option, vote;
+                                    option = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getFormatOptionsStart().replace("%s%", currentOption) + " "));
+
+                                    vote = new TextComponent(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVote()));
+                                    vote.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/survey vote " + survey.toLowerCase() + " " + numberOption));
+                                    vote.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(SetColor.setColor(plugin.getMessagesManager().getStartSurveyVoteHover().replace("%s%", currentOption))).create()));
+
+                                    option.addExtra(vote);
+                                    p.spigot().sendMessage(option);
+                                    i++;
+                                }
+                            }
+                            p.sendMessage("");
+                        }
+                        if (plugin.getMainConfigManager().isTitlesStartEnabled()) {
+                            String title = plugin.getMainConfigManager().getTitlesStartUp().replace("%s%", message);
+                            String subtitle = plugin.getMainConfigManager().getTitlesStartDown();
+                            int fadeIn = plugin.getMainConfigManager().getTitlesStartFadeIn();
+                            int stay = plugin.getMainConfigManager().getTitlesStartStay();
+                            int fadeOut = plugin.getMainConfigManager().getTitlesStartFadeOut();
+                            for (Player p : Bukkit.getOnlinePlayers()) {
+                                SetTitles.setTitle(p, title, subtitle, fadeIn, stay, fadeOut);
+                            }
+                        }
+                        plugin.setSurveyProgress(survey.toLowerCase());
+                        SurveyScheduler sh = new SurveyScheduler(plugin, survey);
+                        sh.runTaskLater(plugin, time * 20);
+                        plugin.setTaskID(sh.getTaskId());
+                        player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyPlayerMessage()));
+                    }else{
+                        sound.setSounds(player, CustomSound.ERROR);
+                        player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyInProgress()));
+                    }
+                }else{
+                    sound.setSounds(player, CustomSound.ERROR);
+                    player.sendMessage(SetColor.setColor(plugin.name + plugin.getMessagesManager().getStartSurveyNotFound()));
+                }
+            }catch (NullPointerException ex){
+                if(plugin.getMainConfigManager().isDbEnabled()) {
+                    player.sendMessage(SetColor.setColor(plugin.name + "&cError! Could not connect to MySQL"));
+                }else{
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 }

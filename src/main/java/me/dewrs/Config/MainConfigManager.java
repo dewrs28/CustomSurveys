@@ -6,6 +6,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainConfigManager {
     private CustomConfig configFile;
     private CustomSurveys plugin;
@@ -102,23 +105,32 @@ public class MainConfigManager {
         FileConfiguration config = configFile.getConfig();
         if(!config.contains("database.enabled")){
             config.set("database.enabled", false);
+            saveConfig();
         }
         if(!config.contains("database.host")){
             config.set("database.host", "hostname");
+            saveConfig();
         }
         if(!config.contains("database.port")){
             config.set("database.port", "port");
+            saveConfig();
         }
         if(!config.contains("database.database")){
             config.set("database.database", "database");
+            saveConfig();
         }
         if(!config.contains("database.user")){
             config.set("database.user", "user");
+            saveConfig();
         }
         if(!config.contains("database.password")){
             config.set("database.password", "pass");
+            List<String> comments = new ArrayList<>();
+            comments.add("If your database does not need a password, leave it like this:");
+            comments.add("password: ''");
+            config.setComments("database.password", comments);
+            saveConfig();
         }
-        saveConfig();
     }
 
     public boolean isTitlesStartEnabled() {

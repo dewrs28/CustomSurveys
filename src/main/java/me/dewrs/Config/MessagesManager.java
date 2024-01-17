@@ -185,11 +185,12 @@ public class MessagesManager {
         FileConfiguration config = configFile.getConfig();
         if(!config.contains("list_surveys.survey_not_found")){
             config.set("list_surveys.survey_not_found", "&cSurvey not found");
+            saveConfig();
         }
         if(!config.contains("list_surveys.error_no_name_survey")){
             config.set("list_surveys.error_no_name_survey", "&cSet a name");
+            saveConfig();
         }
-        saveConfig();
     }
     public FileConfiguration getConfig(){
         return configFile.getConfig();

@@ -55,4 +55,6 @@ database:
   port: port
   database: "database"
   user: "user"
+  #If your database does not need a password, leave it like this:
+  #password: ''
   password: "pass"

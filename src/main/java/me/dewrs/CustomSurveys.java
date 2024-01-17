@@ -7,6 +7,7 @@ import me.dewrs.Managers.CreateSurvey;
 import me.dewrs.Managers.EditSurvey;
 import me.dewrs.SQL.SQLConnection;
 import me.dewrs.Utils.SetColor;
+import me.dewrs.Utils.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -14,7 +15,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
-import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -96,6 +96,7 @@ public class CustomSurveys extends JavaPlugin {
     private String database;
     private String user;
     private String password;
+    private static final int SPIGOT_RESOURCE_ID = 114527;
     public void onEnable(){
         regCommands();
         regEvents();
@@ -128,6 +129,18 @@ public class CustomSurveys extends JavaPlugin {
             Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name + "&c&lError! Check the file 'surveys.yml'"));
         }
         Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name+"&ahas been enabled, version: "+version));
+        new UpdateChecker(this, SPIGOT_RESOURCE_ID).getLatestVersion(version -> {
+            if (this.getDescription().getVersion().equalsIgnoreCase(version)) {
+                Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name+"Is up to date!"));
+            } else {
+                Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name+"*********************************************************************"));
+                Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name+"&c CustomSurveys is outdated!"));
+                Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name+"&cNewest version: &e1.1"));
+                Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name+"&cYour version: &e" + version));
+                Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name+"&cPlease Update Here: &ehttps://spigotmc.org/114527"));
+                Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name+"*********************************************************************"));
+            }
+        });
     }
     public void onDisable(){
         Bukkit.getConsoleSender().sendMessage(SetColor.setColor(name+"&chas been disabled"));
